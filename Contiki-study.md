@@ -73,9 +73,36 @@ int main(){
 ### 内核
 
 #### Protothreads
+
 * Tips
+
 >>Protothreads是一种针对C语言封装后的宏函数库，为C语言模拟了一种无堆栈的轻量线程环境，
 >>能够实现模拟线程的条件阻塞、信号量操作等操作系统中特有的机制，从而使程序实现多线程操作。
+
+* Thread和Protothreads栈的对比图：
+	![_20160812135235](https://cloud.githubusercontent.com/assets/13186592/17613882/3c422ac0-6094-11e6-8df1-7decd46e6f62.png)
+> 从图可以看出，原本需要 3 个栈的Thread机制，在Protothreads只需要一个栈，当进程数量很多的时候，由栈空间省下来的内存是相当可观的。保存程序断点在传统的Thread机制很简单，只需要要保存在私有的栈，然而Protothreads不能将断点保存在公有栈中。Protothreads很巧妙地解决了这个问题，即用一个两字节静态变量存储被中断的行，因为静态变量不从栈上分配空间，所以即使有任务切换也不会影响到该变量，从而达到保存断点的。下一次该进程获得执行权的时候，进入函数体后就通过 switch 语句跳转到上一次被中断的地方。
+
+* 保存断点
+  保存断点是通过保存行数来完成的，在被中断的地方插入编译器关键字__LINE__，编译器便自动记录所中断的行数。展开那些具有中断功能的宏，可以发现最后保存行数是宏 LC_SET，取宏 PROCESS_WAIT_EVENT()为例，将其展开得到如下代码：
+```C
+#define PROCESS_WAIT_EVENT() PROCESS_YIELD()
+#define PROCESS_YIELD() PT_YIELD(process_pt)
+#define PT_YIELD(pt) \
+do{ \
+PT_YIELD_FLAG = 0; \
+LC_SET((pt)->lc); \
+if(PT_YIELD_FLAG == 0) \
+{
+return PT_YIELDED; \
+} \
+}while(0)
+```
+#define LC_SET(s) s = __LINE__; case __LINE__: //保存程序断点，下次再运行该进程直接跳到 case __LINE__
+
+**值得一提的是，宏 LC_SET 展开还包含语句 case __LINE__，用于下次恢复断点，即下次通过 switch 语言便可跳转到 case 的下一语句。**
+
+* 恢复断点
 
 内核最主要的三个核心（数据结构）：
 * process：进程
