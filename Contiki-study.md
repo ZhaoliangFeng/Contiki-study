@@ -169,11 +169,76 @@ Contiki采用单向链表来管理系统所有进程
 
 ##### 进程相关操作
 
-* 进程初始化
-void  process_init (void)
-* 创建进程
-PROCESS_THREAD(name, ev, data)
-* 启动进程
-void  process_start (struct process *p, const char *arg)
-* 进程退出
-process_exit (struct process *p)
+> * 进程初始化
+> void  process_init (void)
+
+> * 创建进程
+> PROCESS_THREAD(name, ev, data)
+
+> * 启动进程
+> void  process_start (struct process *p, const char *arg)
+
+> * 进程退出
+> process_exit (struct process *p)
+
+####  event-事件以及事件调度
+
+* Contiki 将事件机制融入Protothreads 机制，每个事件绑定一个进程(广播事件例外)，进程间的消息传递也是通过事件来传递的
+**数据结构**
+```C
+struct event_data {
+  process_event_t ev;
+  process_data_t data;
+  struct process *p;
+};
+```
+
+**成员描述：**
+* ev-事件标识
+* data-事件对应的消息指针
+* p-事件绑定的进程
+
+**事件队列**
+* Contiki采用一个全局的静态数组用于存放事件，逻辑上形成环形队列，同时对系统来说，事件采用先到先服务策略
+
+ 
+
+> * Contiki定义了两个变量用来管理事件队列
+> *nevent-记录未处理的事件的总数
+> *fevent-记录下一个待处理事件的位置
+
+**事件相关操作**
+> * 新建事件
+> process_event_t  process_alloc_event (void)
+
+> * 事件产生（异步和同步）
+> process_post (struct process *p, process_event_t ev, void *data)
+> process_post_synch (struct process *p, process_event_t ev, void *data)
+
+> * 事件调度
+> static void do_event(void)
+
+#### event timer-事件定时器
+
+* etimer是contiki系统的一类特殊事件，是跟进程绑定，当etimer到期时，会给相应绑定的的进程传递事件PROCESS_EVENT_TIMER。
+**数据结构**
+```C
+struct etimer {
+  struct timer timer;
+  struct etimer *next;
+  struct process *p;
+};
+
+struct timer {
+  clock_time_t start;
+  clock_time_t interval;
+};
+```
+**成员描述：**
+* timer-定时器定时属性设置
+* next-指向下一个etimer
+* p-定时器绑定的进程
+
+**etimer链表**
+* Contiki采用单向链表来管理系统etimer
+
