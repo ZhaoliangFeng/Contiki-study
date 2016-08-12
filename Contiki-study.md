@@ -97,15 +97,83 @@ if(PT_YIELD_FLAG == 0) \
 return PT_YIELDED; \
 } \
 }while(0)
-```
+
 #define LC_SET(s) s = __LINE__; case __LINE__: //保存程序断点，下次再运行该进程直接跳到 case __LINE__
+```
 
 **值得一提的是，宏 LC_SET 展开还包含语句 case __LINE__，用于下次恢复断点，即下次通过 switch 语言便可跳转到 case 的下一语句。**
 
 * 恢复断点
+  被中断程序再次获得执行权时，便从该进程的函数执行体进入，按照Contiki的编程替换，函数体第一条语句便是PROCESS_BEGIN宏，该宏包含一条 switch语句，用于跳转到上一次被中断的行，从而恢复执行， 宏 PROCESS_BEGIN 展开的源代码如下：
 
-内核最主要的三个核心（数据结构）：
+```C
+#define PROCESS_BEGIN() PT_BEGIN(process_pt)
+#define PT_BEGIN(pt) { char PT_YIELD_FLAG = 1; LC_RESUME((pt)->lc)
+#define LC_RESUME(s) switch(s) { case 0: //switch 语言跳转到被中断的行
+```
+#### 内核最主要的三个核心（数据结构）：
+
 * process：进程
 * event_data：事件
 * etimer：事件定时器
 
+##### process-进程以及进程调度
+
+* 进程是一个系统最重要的概述，Contiki的进程机制是基于Protothreads线程模型，为确保高优先级任务尽快得到响应，Contiki采用两级进程调度。
+* 数据结构，也即进程控制块。
+```C
+struct process {
+  struct process *next;
+#if PROCESS_CONF_NO_PROCESS_NAMES
+#define PROCESS_NAME_STRING(process) ""
+#else
+  const char *name;
+#define PROCESS_NAME_STRING(process) (process)->name
+#endif
+  PT_THREAD((* thread)(struct pt *, process_event_t, process_data_t));
+  struct pt pt;
+  unsigned char state, needspoll;
+};
+```
+> * 成员的描述
+> * next-指向下一个进程的指针
+> * name-进程名称
+> * thread-进程的执行体
+> * pt-记录进程被中断的行数
+> * state-进程的状态
+> * needspoll-进程优先级
+
+##### 进程链表process_list
+
+Contiki采用单向链表来管理系统所有进程
+
+![_20160812141348](https://cloud.githubusercontent.com/assets/13186592/17614318/0580fae4-6098-11e6-9ce8-7f34b4ec3c14.png)
+
+* Contiki定义了两个变量用来管理这个链表：
+* process_list-指向链表头部
+* process_current-指向当前进程
+
+##### 进程状态
+* Contiki系统的进程有三个状态：
+```C
+#define PROCESS_STATE_NONE    0
+#define PROCESS_STATE_RUNNING 1
+#define PROCESS_STATE_CALLED  2
+```
+
+* 进程状态转换图如下所示：
+
+![_20160812142041](https://cloud.githubusercontent.com/assets/13186592/17614340/3350d8f4-6098-11e6-92e9-356a0bdfa2e4.png)
+
+> PROCESS_STATE_NONE是指进程不处于运行状态，而PROCESS_STATE_RUNNING和PROCESS_STATE_CALLED都属于运行状态。创建进程(还未投入运行)以及进程退出(但此时还没从进程链表删除)，进程状态都为PROCESS_STATE_NONE。通过进程启动函数process_start将新创建的进程投入运行队列(但未必有执行权)，此时进程状态为PROCESS_STATE_RUNNING，真正获得执行权的进程状态为PROCESS_STATE_CALLED，处在运行队列的进程(包括正在运行和等待运行)可以调用exit_process退出。
+
+##### 进程相关操作
+
+* 进程初始化
+void  process_init (void)
+* 创建进程
+PROCESS_THREAD(name, ev, data)
+* 启动进程
+void  process_start (struct process *p, const char *arg)
+* 进程退出
+process_exit (struct process *p)
