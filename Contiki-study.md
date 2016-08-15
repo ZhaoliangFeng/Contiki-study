@@ -269,7 +269,7 @@ struct timer {
 
 ### 事件驱动型的系统调度
 
-	![1](https://cloud.githubusercontent.com/assets/13186592/17668218/cfa2bc50-633a-11e6-98ea-cf35aea02e8a.png)
+![1](https://cloud.githubusercontent.com/assets/13186592/17668218/cfa2bc50-633a-11e6-98ea-cf35aea02e8a.png)
 
 * do_poll：遍历整个process_list链表，找到优先级为1（needspoll=1）的进行，调用call_process函数执行进程。
 * do_event：利用fevent在事件队列中找出需要处理的事件，调用call_process函数执行绑定的进程。
