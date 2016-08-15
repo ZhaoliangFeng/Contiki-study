@@ -266,3 +266,5 @@ struct timer {
 	![2222222](https://cloud.githubusercontent.com/assets/13186592/17665054/034a230a-632b-11e6-82c2-461df0374bac.png)
 	
 * etimer_process 获得执行权时，若传递的是退出事件，遍历整个 timerlist，将与 该进程(通过参数 data 传递)相关的 etimer 从 timerlist 删除，而后转去所有到期的 etimer。通过遍历整个 etimer 查看到期的 etimer，若有到期，发绑定的进程触发事 件 PROCESS_EVENT_TIMER，并将 etimer 的进程指针设为空(事件已加入事件队 列，处理完毕)，接着删除该 etimer，求出下一次 etimer 到期时间，继续检查是否 还有 etimer 到期。提升 etimer_process 优先级，若接下来都没有 etimer 到期了，就 退出。总之，遍历 timerlist，只要 etimer 到期，处理之后重头遍历整个链表，直到 timerlist 没有到期的 etimer 就退出。
+
+### 事件驱动型的系统调度
