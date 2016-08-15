@@ -339,7 +339,7 @@ int main(){
 ### 进程挂起
 
 |API|说明|
-|:----:|:----:|
+|:----|:----|
 |PROCESS_WAIT_EVENT()|Wait for an event to be posted to the process|
 |PROCESS_WAIT_EVENT_UNTIL(c)|Wait for an event to be posted to the process, with an extra condition|
 |PROCESS_YIELD()|Yield the currently running process|
