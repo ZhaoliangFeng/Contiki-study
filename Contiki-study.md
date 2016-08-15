@@ -325,7 +325,6 @@ PROCESS_THREAD(example_1_process, ev, data) //PROCESS_THREAD(name, ev, data)
 
 int main(){
   clock_init();//时钟初始化，与硬件相关
-
   process_init(); //进程初始化
   process_start(&etimer_process, NULL); //启动系统进程etimer_process
   autostart_start(autostart_processes); //启动指针数组autostart_processes里的所有进程
@@ -340,6 +339,7 @@ int main(){
 ### 进程挂起
 
 |API|说明|
+|:----:|:----:|
 |PROCESS_WAIT_EVENT()|Wait for an event to be posted to the process|
 |PROCESS_WAIT_EVENT_UNTIL(c)|Wait for an event to be posted to the process, with an extra condition|
 |PROCESS_YIELD()|Yield the currently running process|
