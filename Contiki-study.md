@@ -147,7 +147,7 @@ struct process {
 
 Contiki采用单向链表来管理系统所有进程
 
-	![_20160812141348](https://cloud.githubusercontent.com/assets/13186592/17614318/0580fae4-6098-11e6-9ce8-7f34b4ec3c14.png)
+![_20160812141348](https://cloud.githubusercontent.com/assets/13186592/17614318/0580fae4-6098-11e6-9ce8-7f34b4ec3c14.png)
 
 * Contiki定义了两个变量用来管理这个链表：
 * process_list-指向链表头部
