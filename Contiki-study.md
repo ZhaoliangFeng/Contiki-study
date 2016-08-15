@@ -282,3 +282,72 @@ struct timer {
 
 * process_poll：将相应的进行优先级设置为1（needspoll=1），此处是将系统进程etimer_process优先级设置为1.
 
+#### 重要变量
+
+* poll_requested：用于标识系统是否存在高优先级进程，即标记系统是否有进程的needspoll为1.
+
+### 编程模式
+
+* contiki是基于Protothreads模型实现，其本质是个switch语句实现的基于“状态机”“事件触发的”机制，所以在进程实现本体中不要使用switch语句和局部变量。
+
+#### 代码框架
+
+* 进程实现
+
+```C
+/*步骤1：包含需要的头文件*/
+#include "contiki.h"
+
+/*步骤2：用PROCESS宏声明进程执行主体，并定义进程*/
+PROCESS(example_1_process, "Example 1"); //PROCESS(name, strname)    
+
+/*步骤3：定义进程执行主体thread*/
+PROCESS_THREAD(example_1_process, ev, data) //PROCESS_THREAD(name, ev, data)
+{
+   PROCESS_BEGIN();  /*代码总是以宏PROCESS_BEGIN开始*/
+
+   /*example_1_process的代码*/
+
+   PROCESS_END();  /*代码总是以宏PROCESS_END结束*/
+ }
+```
+
+* 主函数实现
+
+```C
+#include <stdint.h>
+#include <stdio.h>
+#include <debug-uart.h>
+#include <sys/process.h>
+#include <etimer.h>
+#include <sys/autostart.h>
+#include <clock.h>
+
+int main(){
+  clock_init();//时钟初始化，与硬件相关
+
+  process_init(); //进程初始化
+  process_start(&etimer_process, NULL); //启动系统进程etimer_process
+  autostart_start(autostart_processes); //启动指针数组autostart_processes里的所有进程
+  while (1){
+    do{
+    }while (process_run() > 0);
+  }
+  return 0;
+}
+```
+
+### 进程挂起
+
+|API|说明|
+|PROCESS_WAIT_EVENT()|Wait for an event to be posted to the process|
+|PROCESS_WAIT_EVENT_UNTIL(c)|Wait for an event to be posted to the process, with an extra condition|
+|PROCESS_YIELD()|Yield the currently running process|
+|PROCESS_YIELD_UNTIL(c)|Yield the currently running process until a condition occurs|
+|PROCESS_WAIT_UNTIL(c)|Wait for a condition to occur|
+|PROCESS_WAIT_WHILE(c)|Block and wait while condition is true|
+|PROCESS_PT_SPAWN(pt, thread)|Spawn a protothread from the process|
+|PROCESS_PAUSE()|Yield the process for a short while|
+
+### 移植
+
