@@ -218,7 +218,7 @@ struct event_data {
 > * 事件调度
 > * static void do_event(void)
 
-#### event timer-事件定时器
+### event timer-事件定时器
 
 * etimer是contiki系统的一类特殊事件，是跟进程绑定，当etimer到期时，会给相应绑定的的进程传递事件PROCESS_EVENT_TIMER。
 
@@ -253,8 +253,18 @@ struct timer {
 
 > * etimer添加
 > * void  etimer_set (struct etimer *et, clock_time_t interval)
+* 定义一个 etimer 结构体，调用 etimer_set 函数将 etimer 添加到 timerlist，函数etimer_set 流程图如下： 
+	![1111111](https://cloud.githubusercontent.com/assets/13186592/17664990/84735c18-632a-11e6-8edc-c640c7386e3c.png)
+* etimer_set 首先设置 etimer 成员变量 timer 的值(由 timer_set 函数完成)，即用当前时间初始化start，并设置间隔interval，接着调用add_timer 函数，该函数首先 将管理 etimer 系统进程 etimer_process 优先级提升，以便定时器时间到了可以得到 更快的响应。接着确保欲加入的 etimer 不在 timerlist 中(通过遍历 timerlist 实现)， 若该 etimer 已经在etimer链表，则无须将etimer加入链表，仅更新时间。否则将该etimer插入到timerlist 链表头位置，并更新时间(update_time)。这里更新时间的意思是求出etimer链表中，还需要多长next_expiration(全局静态变量)时间，就会有etimer到期。
+
+
 > * etimer管理
-> * Contiki采用系统进程etimer_process管理所有etimer定时器。
 > * PROCESS(etimer_process, "Event timer")
 
+* Contiki 用一个系统进程 etimer_process 管理所有 etimer 定时器。进程退出时， 会向所有进程发送事件PROCESS_EVENT_EXITED，当然也包括etimer 系统进程 etimer_process。当 etimer_process拥有执行权的时候，便查看是否有相应的etimer绑定到该进程，若有就删除这些etimer。除此之外，etimer_process 还会处理到期 的 etimer，etimer_process 的 thread 函数流程图如下：
 
+	![2222222](https://cloud.githubusercontent.com/assets/13186592/17665054/034a230a-632b-11e6-82c2-461df0374bac.png)
+
+* etimer_process 获得执行权时，若传递的是退出事件，遍历整个timerlist，将与该进程(通过参数data传递)相关的etimer从timerlist删除，而后转去所有到期的 etimer。通过遍历整个 etimer查看到期的etimer，若有到期，发绑定的进程触发事件PROCESS_EVENT_TIMER，并将etimer的进程指针设为空(事件已加入事件队 列，处理完毕)，接着删除该etimer，求出下一次etimer到期时间，继续检查是否还有etimer到期。提升etimer_process优先级，若接下来都没有 etimer 到期了，就 退出。总之，遍历 timerlist，只要 etimer到期，处理之后重头遍历整个链表，直到timerlist没有到期的etimer就退出
+
+### 事件shi'jian事件实践qu'dong
