@@ -355,9 +355,9 @@ int main(){
 * 移植工作以stm32芯片为例。contiki是非抢占的操作系统，所以移植时并不需要保存上下文。那么重点就是系统时钟的移植处理。contiki系统提供对应的系统时钟接口文件-Clock library（The clock library is the interface between Contiki and the platform specific clock functionality。）系统提供对应的clock.h头文件，用户在移植过程中只需要将对应的函数实现即可。
 
 **时钟初始化函数-void clock_init(void)**
-主要是初始化系统时钟
+* 主要是初始化系统时钟
 **重要变量-CLOCK_SECOND**
-A second, measured in system clock time.
+* A second, measured in system clock time.
 **时钟中断函数-Void os_systick_isr(void)**
-主要是关联current_clock，current_seconds变量以及调用etimer_request_poll()函数
+* 主要是关联current_clock，current_seconds变量以及调用etimer_request_poll()函数
 
