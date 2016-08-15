@@ -147,7 +147,7 @@ struct process {
 
 Contiki采用单向链表来管理系统所有进程
 
-![_20160812141348](https://cloud.githubusercontent.com/assets/13186592/17614318/0580fae4-6098-11e6-9ce8-7f34b4ec3c14.png)
+	![_20160812141348](https://cloud.githubusercontent.com/assets/13186592/17614318/0580fae4-6098-11e6-9ce8-7f34b4ec3c14.png)
 
 * Contiki定义了两个变量用来管理这个链表：
 * process_list-指向链表头部
@@ -163,7 +163,7 @@ Contiki采用单向链表来管理系统所有进程
 
 * 进程状态转换图如下所示：
 
-![_20160812142041](https://cloud.githubusercontent.com/assets/13186592/17614340/3350d8f4-6098-11e6-92e9-356a0bdfa2e4.png)
+	![_20160812142041](https://cloud.githubusercontent.com/assets/13186592/17614340/3350d8f4-6098-11e6-92e9-356a0bdfa2e4.png)
 
 > PROCESS_STATE_NONE是指进程不处于运行状态，而PROCESS_STATE_RUNNING和PROCESS_STATE_CALLED都属于运行状态。创建进程(还未投入运行)以及进程退出(但此时还没从进程链表删除)，进程状态都为PROCESS_STATE_NONE。通过进程启动函数process_start将新创建的进程投入运行队列(但未必有执行权)，此时进程状态为PROCESS_STATE_RUNNING，真正获得执行权的进程状态为PROCESS_STATE_CALLED，处在运行队列的进程(包括正在运行和等待运行)可以调用exit_process退出。
 
@@ -201,7 +201,7 @@ struct event_data {
 **事件队列**
 * Contiki采用一个全局的静态数组用于存放事件，逻辑上形成环形队列，同时对系统来说，事件采用先到先服务策略
 
- ![_20160812143055](https://cloud.githubusercontent.com/assets/13186592/17615050/dfcef962-609d-11e6-8b57-24238339875a.png)
+	 ![_20160812143055](https://cloud.githubusercontent.com/assets/13186592/17615050/dfcef962-609d-11e6-8b57-24238339875a.png)
 
 > * Contiki定义了两个变量用来管理事件队列
 > * nevent-记录未处理的事件的总数
@@ -243,7 +243,7 @@ struct timer {
 **etimer链表**
 * Contiki采用单向链表来管理系统etimer
 
-![_20160812143757](https://cloud.githubusercontent.com/assets/13186592/17615284/c6f1dcfa-609f-11e6-9bc9-3db3e282f345.png)
+	![_20160812143757](https://cloud.githubusercontent.com/assets/13186592/17615284/c6f1dcfa-609f-11e6-9bc9-3db3e282f345.png)
 
 * Contiki定义了两个变量用来管理etimer
 * Timerlist-指向链表头部
@@ -267,4 +267,5 @@ struct timer {
 
 * etimer_process 获得执行权时，若传递的是退出事件，遍历整个timerlist，将与该进程(通过参数data传递)相关的etimer从timerlist删除，而后转去所有到期的 etimer。通过遍历整个 etimer查看到期的etimer，若有到期，发绑定的进程触发事件PROCESS_EVENT_TIMER，并将etimer的进程指针设为空(事件已加入事件队 列，处理完毕)，接着删除该etimer，求出下一次etimer到期时间，继续检查是否还有etimer到期。提升etimer_process优先级，若接下来都没有 etimer 到期了，就 退出。总之，遍历 timerlist，只要 etimer到期，处理之后重头遍历整个链表，直到timerlist没有到期的etimer就退出
 
-### 事件shi'jian事件实践qu'dong
+
+### 事件
