@@ -267,3 +267,4 @@ struct timer {
 
 * etimer_process 获得执行权时，若传递的是退出事件，遍历整个timerlist，将与该进程(通过参数data传递)相关的etimer从timerlist删除，而后转去所有到期的 etimer。通过遍历整个 etimer查看到期的etimer，若有到期，发绑定的进程触发事件PROCESS_EVENT_TIMER，并将etimer的进程指针设为空(事件已加入事件队 列，处理完毕)，接着删除该etimer，求出下一次etimer到期时间，继续检查是否还有etimer到期。提升etimer_process优先级，若接下来都没有 etimer 到期了，就 退出。总之，遍历timerlist，只要etimer到期，处理之后重头遍历整个链表，直到timerlist没有到期的etimer就退出。
 
+### shijian
