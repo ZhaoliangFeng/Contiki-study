@@ -269,7 +269,16 @@ struct timer {
 
 ### 事件驱动型的系统调度
 
+#### 主函数调度
+
 ![1](https://cloud.githubusercontent.com/assets/13186592/17668218/cfa2bc50-633a-11e6-98ea-cf35aea02e8a.png)
 
 * do_poll：遍历整个process_list链表，找到优先级为1（needspoll=1）的进行，调用call_process函数执行进程。
 * do_event：利用fevent在事件队列中找出需要处理的事件，调用call_process函数执行绑定的进程。
+
+#### tick-isr调度
+
+![2](https://cloud.githubusercontent.com/assets/13186592/17668320/43578824-633b-11e6-8a88-15763f11fb38.png)
+
+* process_poll：将相应的进行优先级设置为1（needspoll=1），此处是将系统进程etimer_process优先级设置为1.
+
